@@ -7,6 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import java.security.Provider.Service;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.techacademy.entity.User;
+import com.techacademy.repository.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,4 +65,35 @@ class UserControllerTest {
         assertEquals(1, user.getId());
         assertEquals("キラメキ太郎", user.getName());
     }
+
+    @Test
+    @DisplayName("User一覧画面")
+    @WithMockUser
+    void testGetList() throws Exception{
+        MvcResult result = mockMvc.perform(get("/user/list"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("userlist"))
+                .andExpect(model().hasNoErrors())
+                .andExpect(view().name("user/list"))
+                .andReturn();
+
+        List<User> userList =(List<User>)result.getModelAndView().getModel().get("userlist");
+        assertEquals(3,userList.size());
+        for(int i=1; i<userList.size(); i++) {
+            assertEquals(i,userList.get(i-1).getId());
+            switch(i) {
+            case 1:
+                assertEquals("キラメキ太郎",userList.get(i-1).getName());
+                break;
+            case 2:
+                assertEquals("キラメキ次郎",userList.get(i-1).getName());
+                break;
+            case 3:
+                assertEquals("キラメキ花子",userList.get(i-1).getName());
+                break;
+            }
+        }
+
+    }
+
 }
